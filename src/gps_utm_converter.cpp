@@ -7,18 +7,6 @@ namespace tas
 {
 namespace proj
 {
-GpsUtmConverter::GpsUtmConverter()
-{
-    proj_gps_to_utm_ = nullptr;
-    init();
-}
-
-GpsUtmConverter::~GpsUtmConverter()
-{
-    init();
-    if (proj_gps_to_utm_)
-        pj_free(proj_gps_to_utm_);
-}
 
 bool GpsUtmConverter::gpsToUtm(const GpsCoord& gps_point, UtmCoord& utm_point)
 {
@@ -64,18 +52,17 @@ bool GpsUtmConverter::gpsToUtm(double gps_lon,
                                bool& utm_heading_valid,
                                char& utm_subarea)
 {
-    if (!proj_initialized_)
+    if (!initialized_)
     {
-        initUtm(gps_lon, gps_lat);
+        init(gps_lon, gps_lat);
     }
 
-    if (proj_initialized_)
+    if (initialized_)
     {
-        proj_coord_gps_.u = gps_lon * DEG_TO_RAD;
-        proj_coord_gps_.v = gps_lat * DEG_TO_RAD;
-        proj_coord_utm_ = pj_fwd(proj_coord_gps_, proj_gps_to_utm_);
-        utm_east = proj_coord_utm_.u;
-        utm_north = proj_coord_utm_.v;
+        Eigen::Vector2d utm;
+        toSecond(utm, {gps_lon * DEG_TO_RAD, gps_lat * DEG_TO_RAD});
+        utm_east = utm.x();
+        utm_north = utm.y();
         utm_zone = utm_zone_;
         utm_subarea = utm_area_;
         utm_altitude = gps_altitude;
@@ -111,20 +98,18 @@ bool GpsUtmConverter::utmToGps(double& gps_lon,
                                int utm_zone,
                                bool utm_heading_valid)
 {
-    if (!proj_initialized_)
+    if (!initialized_)
     {
-        initUtm(utm_zone);
+        init(utm_zone);
     }
 
-    if (proj_initialized_)
+    if (initialized_)
     {
-        proj_coord_utm_.u = utm_east;
-        proj_coord_utm_.v = utm_north;
+        Eigen::Vector2d gps;
+        toFirst(gps, {utm_east, utm_north});
 
-        proj_coord_gps_ = pj_inv(proj_coord_utm_, proj_gps_to_utm_);
-
-        gps_lon = proj_coord_gps_.u * RAD_TO_DEG;
-        gps_lat = proj_coord_gps_.v * RAD_TO_DEG;
+        gps_lon = gps.x() * RAD_TO_DEG;
+        gps_lat = gps.y() * RAD_TO_DEG;
         gps_altitude = utm_altitude;
 
         if (utm_heading_valid)
@@ -148,7 +133,7 @@ bool GpsUtmConverter::utmToGps(double& gps_lon,
 
 int GpsUtmConverter::getUtmZone()
 {
-    if (proj_initialized_)
+    if (initialized_)
         return utm_zone_;
     else
         return 0;
@@ -156,7 +141,7 @@ int GpsUtmConverter::getUtmZone()
 
 char GpsUtmConverter::getUtmArea()
 {
-    if (proj_initialized_)
+    if (initialized_)
         return utm_area_;
     else
         return 0;
@@ -164,79 +149,47 @@ char GpsUtmConverter::getUtmArea()
 
 void GpsUtmConverter::calcHeadingOffset(double lon, double lat, double& heading_offset)
 {
+    Eigen::Vector2d utm;
     double utm_east1, utm_north1, utm_east2, utm_north2;
 
     // transform given point from GPS to UTM
-    proj_coord_gps_.u = lon * DEG_TO_RAD;
-    proj_coord_gps_.v = lat * DEG_TO_RAD;
-    proj_coord_utm_ = pj_fwd(proj_coord_gps_, proj_gps_to_utm_);
-    utm_east1 = proj_coord_utm_.u;
-    utm_north1 = proj_coord_utm_.v;
+    toSecond(utm, {lon * DEG_TO_RAD, lat * DEG_TO_RAD});
+    utm_east1 = utm.x();
+    utm_north1 = utm.y();
 
     // calculate a second point, moved a bit along the lon-axis.
     // transform this second point from GPS to UTM
-    proj_coord_gps_.u = 0.0001 + lon * DEG_TO_RAD;
-    proj_coord_gps_.v = lat * DEG_TO_RAD;
-    proj_coord_utm_ = pj_fwd(proj_coord_gps_, proj_gps_to_utm_);
-    utm_east2 = proj_coord_utm_.u;
-    utm_north2 = proj_coord_utm_.v;
+    toSecond(utm, {0.0001 + lon * DEG_TO_RAD, lat * DEG_TO_RAD});
+    utm_east2 = utm.x();
+    utm_north2 = utm.y();
 
     // calculate the angle between GPS and UTM coordinate system at this given coordinate
     heading_offset = atan((utm_north2 - utm_north1) / (utm_east2 - utm_east1));
 }
 
-void GpsUtmConverter::init()
+bool GpsUtmConverter::init(double lon, double lat)
 {
-    proj_initialized_ = false;
-    utm_area_ = 0;
-    utm_zone_ = 0;
-}
-
-bool GpsUtmConverter::initUtm(double lon, double lat)
-{
-    if (lon == 0.0 && lat == 0.0)
+    if ((lon == 0.0 && lat == 0.0) || (fabs(lon) <= 0.01f && fabs(lat) <= 0.01f))
     {
         return false;
     }
 
-    int utm_zone;
-    char utm_area;
-    calcUtmZone(lon, lat, utm_zone, utm_area);
+    calcUtmZone(lon, lat, utm_zone_, utm_area_);
+    init(utm_zone_);
 
-    proj_initialized_ = initUtm(utm_zone);
-
-    if (fabs(lon) <= 0.01f && fabs(lat) <= 0.01f)
+    if (!initialized_)
     {
-        proj_initialized_ = false;
-    }
-
-    return proj_initialized_;
-}
-
-bool GpsUtmConverter::initUtm(int utm_zone)
-{
-    // GPS calculation init
-    char argsProj[100] = "";
-    strcat(argsProj, "+proj=utm +ellps=WGS84 +zone=");
-    char argsProjZone[10];
-
-    sprintf(argsProjZone, "%d", utm_zone);
-    strcat(argsProj, argsProjZone);
-    strcat(argsProj, " -f '%.4f'");
-
-    if (!(proj_gps_to_utm_ = pj_init_plus(argsProj)))
-    {
-        proj_initialized_ = false;
         utm_zone_ = 0;
         utm_area_ = 0;
     }
-    else
-    {
-        proj_initialized_ = true;
-        utm_zone_ = utm_zone;
-    }
 
-    return proj_initialized_;
+    return initialized_;
+}
+
+bool GpsUtmConverter::init(int utm_zone)
+{
+    std::string second_proj_string = "+proj=utm +ellps=WGS84 +zone=" + std::to_string(utm_zone);
+    return CoordinateSystemConverter::init("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs", second_proj_string);
 }
 
 void GpsUtmConverter::calcUtmZone(double lon, double lat, int& zone, char& area)
@@ -315,8 +268,6 @@ void GpsUtmConverter::calcUtmZone(double lon, double lat, int& zone, char& area)
 
     zone = utm_zone;
     area = utm_area;
-    utm_zone_ = utm_zone;
-    utm_area_ = utm_area;
 }
 
 double GpsUtmConverter::getHeadingOffset(double lon, double lat)

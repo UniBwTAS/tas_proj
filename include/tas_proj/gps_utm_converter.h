@@ -2,6 +2,7 @@
 
 #include <proj_api.h>
 
+#include <tas_proj/coordinate_system_converter.h>
 #include <tas_proj/gps_coord.h>
 #include <tas_proj/utm_coord.h>
 
@@ -9,14 +10,9 @@ namespace tas
 {
 namespace proj
 {
-class GpsUtmConverter
+class GpsUtmConverter : public CoordinateSystemConverter
 {
   public:
-    GpsUtmConverter();
-
-  public:
-    ~GpsUtmConverter();
-
     /**
      * @brief Transform a GPS point from Lat/Lon to UTM system
      *
@@ -90,43 +86,19 @@ class GpsUtmConverter
                   bool utm_heading_valid);
 
     /**
-     * @brief init
-     */
-    void init();
-
-    /**
-     * @brief initUtm Initialize the converter with given GPS coordinates
+     * @brief init Initialize the converter with given GPS coordinates
      * @param lon
      * @param lat
      * @return success
      */
-    bool initUtm(double lon, double lat);
+    bool init(double lon, double lat);
 
     /**
-     * @brief initUtm Initialize the converter with given UTM zone
+     * @brief int Initialize the converter with given UTM zone
      * @param utm_zone
      * @return success
      */
-    bool initUtm(int utm_zone);
-
-    /**
-     * @brief calcUtmZone Calculates the UTM zone and area info
-     *        for the the given coordinate
-     * @param lon
-     * @param lat
-     * @param zone is filled
-     * @param area is filled
-     */
-    void calcUtmZone(double lon, double lat, int& zone, char& area);
-
-    /**
-     * @brief calcHeadingOffset Calculates the angle between GPS longitudinal(x) axis
-     *        and UTM East(x) axis at the given coordinate
-     * @param lon
-     * @param lat
-     * @param heading_offset is filled
-     */
-    void calcHeadingOffset(double lon, double lat, double& heading_offset);
+    bool init(int utm_zone);
 
     /**
      * @brief getUtmZone Provides the current UTM zone.
@@ -150,15 +122,29 @@ class GpsUtmConverter
      */
     double getHeadingOffset(double lon, double lat);
 
-  private:
-    // GPS From PROJ4 Library
-    projUV proj_coord_utm_{};
-    projUV proj_coord_gps_{};
-    projPJ proj_gps_to_utm_;
+    /**
+     * @brief calcUtmZone Calculates the UTM zone and area info
+     *        for the the given coordinate
+     * @param lon
+     * @param lat
+     * @param zone is filled
+     * @param area is filled
+     */
+    static void calcUtmZone(double lon, double lat, int& zone, char& area);
 
-    bool proj_initialized_{};
-    int utm_zone_{};
-    char utm_area_{};
+  private:
+    /**
+     * @brief calcHeadingOffset Calculates the angle between GPS longitudinal(x) axis
+     *        and UTM East(x) axis at the given coordinate
+     * @param lon
+     * @param lat
+     * @param heading_offset is filled
+     */
+    void calcHeadingOffset(double lon, double lat, double& heading_offset);
+
+  private:
+    int utm_zone_;
+    char utm_area_;
 };
 } // namespace proj
 } // namespace tas
