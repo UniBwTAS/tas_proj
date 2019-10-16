@@ -9,7 +9,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS roscpp)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -104,7 +104,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
-    #  CATKIN_DEPENDS other_catkin_pkg
+    CATKIN_DEPENDS roscpp
     DEPENDS EIGEN3 PROJ
 )
 
@@ -126,6 +126,7 @@ add_library(${PROJECT_NAME}
     src/coordinate_system_converter.cpp
     src/gps_converter.cpp
     src/gps_utm_converter.cpp
+    src/geoid_converter.cpp
     src/gps_coord.cpp
     src/utm_coord.cpp
     )

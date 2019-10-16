@@ -17,6 +17,8 @@
 
     <buildtool_depend>catkin</buildtool_depend>
 
+    <!--roscpp dependency just for getting filepath to .gtx file-->
+    <depend>roscpp</depend>
     <depend>Proj</depend>
     <depend>Eigen3</depend>
 
