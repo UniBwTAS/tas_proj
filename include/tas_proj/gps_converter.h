@@ -23,8 +23,6 @@ namespace proj
  */
 class GpsConverter : public CoordinateSystemConverter
 {
-    //! Flag that declares the projection as GPS to GPS
-    bool is_gps_;
 
   public:
     /**
@@ -59,9 +57,6 @@ class GpsConverter : public CoordinateSystemConverter
     bool fromGps(Eigen::Vector2d& to, const GpsCoord& from);
 
     bool fromGps(Eigen::Vector3d& to, const GpsCoord& from);
-
-  private:
-    static bool findString(const std::string& strHaystack, const std::string& strNeedle);
 };
 } // namespace proj
 } // namespace tas
