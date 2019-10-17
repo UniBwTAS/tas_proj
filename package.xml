@@ -7,7 +7,7 @@
     <!-- One maintainer tag required, multiple allowed, one person per tag -->
     <!-- Example:  -->
     <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-    <maintainer email="anre@todo.todo">anre</maintainer>
+    <maintainer email="andreas.reich@unibw.de">anre</maintainer>
 
 
     <!-- One license tag required, multiple allowed, one license per tag -->
@@ -18,6 +18,7 @@
     <buildtool_depend>catkin</buildtool_depend>
 
     <!--roscpp dependency just for getting filepath to .gtx file-->
+    <!--Maybe possible to find alternative to make this package independent from ROS -->
     <depend>roscpp</depend>
     <depend>Proj</depend>
     <depend>Eigen3</depend>
