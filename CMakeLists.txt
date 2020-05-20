@@ -3,7 +3,7 @@ project(tas_proj)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-find_package(catkin REQUIRED COMPONENTS roscpp)
+find_package(catkin REQUIRED COMPONENTS roscpp roslib)
 find_package(Eigen3 REQUIRED)
 find_package(Proj REQUIRED)
 

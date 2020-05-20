@@ -13,4 +13,5 @@
     <depend>roscpp</depend>
     <depend>proj</depend>
     <depend>eigen</depend>
+    <depend>roslib</depend>
 </package>
