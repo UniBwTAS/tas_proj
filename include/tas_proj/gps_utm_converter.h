@@ -1,7 +1,5 @@
 #pragma once
 
-#include <proj_api.h>
-
 #include <tas_proj/coordinate_system_converter.h>
 #include <tas_proj/gps_coord.h>
 #include <tas_proj/utm_coord.h>

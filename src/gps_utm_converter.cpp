@@ -1,6 +1,3 @@
-#include <proj_api.h>
-
-#include <cstring>
 #include <tas_proj/gps_utm_converter.h>
 
 namespace tas
