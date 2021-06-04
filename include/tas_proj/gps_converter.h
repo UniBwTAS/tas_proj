@@ -23,40 +23,39 @@ namespace proj
  */
 class GpsConverter : public CoordinateSystemConverter
 {
+public:
+  /**
+   * @brief Constructor
+   * @param proj_string The projection string
+   */
+  explicit GpsConverter(const std::string& proj_string = "");
 
-  public:
-    /**
-     * @brief Constructor
-     * @param proj_string The projection string
-     */
-    explicit GpsConverter(const std::string& proj_string = "");
+  /**
+   * @brief Initializes the converter
+   * @param proj_string The projection string
+   * @return True if successful, false otherwise
+   */
+  bool init(const std::string& proj_string);
 
-    /**
-     * @brief Initializes the converter
-     * @param proj_string The projection string
-     * @return True if successful, false otherwise
-     */
-    bool init(const std::string& proj_string);
+  /**
+   * @brief Converts a given coordinate into GPS
+   * @param to Resulting GPS coordinate
+   * @param from Source coordinate
+   * @return True if successful, false otherwise
+   */
+  bool toGps(GpsCoord& to, const Eigen::Vector2d& from);
 
-    /**
-     * @brief Converts a given coordinate into GPS
-     * @param to Resulting GPS coordinate
-     * @param from Source coordinate
-     * @return True if successful, false otherwise
-     */
-    bool toGps(GpsCoord& to, const Eigen::Vector2d& from);
+  bool toGps(GpsCoord& to, const Eigen::Vector3d& from);
 
-    bool toGps(GpsCoord& to, const Eigen::Vector3d& from);
+  /**
+   * @brief Converts a given GPS coordinate into another system
+   * @param to The resulting coordinate
+   * @param from The source GPS coordinate
+   * @return True if successful, false otherwise
+   */
+  bool fromGps(Eigen::Vector2d& to, const GpsCoord& from);
 
-    /**
-     * @brief Converts a given GPS coordinate into another system
-     * @param to The resulting coordinate
-     * @param from The source GPS coordinate
-     * @return True if successful, false otherwise
-     */
-    bool fromGps(Eigen::Vector2d& to, const GpsCoord& from);
-
-    bool fromGps(Eigen::Vector3d& to, const GpsCoord& from);
+  bool fromGps(Eigen::Vector3d& to, const GpsCoord& from);
 };
-} // namespace proj
-} // namespace tas
+}  // namespace proj
+}  // namespace tas
