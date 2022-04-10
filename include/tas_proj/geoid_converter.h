@@ -35,18 +35,18 @@ public:
   /**
    * @brief ellipsoidalHeight Converts geoidal height (w.r.t. EGM96 Geoid) to ellipsoidal height (w.r.t. WGS84
    * ellipsoid)
+   * @param lon [degree]
+   * @param lat [degree]
    * @param geoidal_height [m]
-   * @param latitude [degree]
-   * @param longitude [degree]
    * @return
    */
   double ellipsoidalHeight(double lon, double lat, double geoidal_height);
 
   /**
    * @brief geoidalHeight Converts ellipsoidal height (w.r.t. WGS84 ellipsoid) to geoidal height (w.r.t. EGM96 Geoid)
+   * @param lon [degree]
+   * @param lat [degree]
    * @param ellipsoidal_height [m]
-   * @param latitude [degree]
-   * @param longitude [degree]
    * @return
    */
   double geoidalHeight(double lon, double lat, double ellipsoidal_height);
