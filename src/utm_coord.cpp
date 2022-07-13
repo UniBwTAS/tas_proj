@@ -2,9 +2,7 @@
 
 #include <tas_proj/utm_coord.h>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 UtmCoord::UtmCoord() : zone(0), subarea(' '), north(0), east(0), altitude(0), heading(0), heading_valid(false)
 {
@@ -32,5 +30,4 @@ std::ostream& operator<<(std::ostream& os, const UtmCoord& c)
   os << " HEAD_VAL: " << c.heading_valid;
   return os;
 }
-}  // namespace proj
 }  // namespace tas

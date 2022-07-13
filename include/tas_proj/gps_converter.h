@@ -1,14 +1,10 @@
 #pragma once
 
-#include <Eigen/Core>
-
 #include <tas_proj/gps_coord.h>
 
 #include <tas_proj/coordinate_system_converter.h>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 /**
  * @class GpsConverter.
@@ -43,9 +39,7 @@ public:
    * @param from Source coordinate
    * @return True if successful, false otherwise
    */
-  bool toGps(GpsCoord& to, const Eigen::Vector2d& from);
-
-  bool toGps(GpsCoord& to, const Eigen::Vector3d& from);
+  bool toGps(GpsCoord& to, const PJ_COORD& from);
 
   /**
    * @brief Converts a given GPS coordinate into another system
@@ -53,9 +47,6 @@ public:
    * @param from The source GPS coordinate
    * @return True if successful, false otherwise
    */
-  bool fromGps(Eigen::Vector2d& to, const GpsCoord& from);
-
-  bool fromGps(Eigen::Vector3d& to, const GpsCoord& from);
+  bool fromGps(PJ_COORD& to, const GpsCoord& from);
 };
-}  // namespace proj
 }  // namespace tas

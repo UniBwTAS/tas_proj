@@ -2,9 +2,7 @@
 
 #include <ostream>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 /**
  * @brief The GPSCoord class
@@ -53,5 +51,4 @@ public:
   friend std::ostream& operator<<(std::ostream& os, const GpsCoord& c);
 };  // GpsCoord
 
-}  // namespace proj
 }  // namespace tas

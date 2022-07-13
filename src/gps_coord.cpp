@@ -2,9 +2,7 @@
 
 #include <tas_proj/gps_coord.h>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 GpsCoord::GpsCoord() : lon(0), lat(0), altitude(0), heading(0), heading_valid(false)
 {
@@ -24,5 +22,4 @@ std::ostream& operator<<(std::ostream& os, const GpsCoord& c)
   os << " HEAD_VAL: " << c.heading_valid;
   return os;
 }
-}  // namespace proj
 }  // namespace tas

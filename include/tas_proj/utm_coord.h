@@ -2,9 +2,7 @@
 
 #include <ostream>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 class UtmCoord
 {
@@ -52,5 +50,4 @@ public:
 
   friend std::ostream& operator<<(std::ostream& os, const UtmCoord& utm);
 };
-}  // namespace proj
 }  // namespace tas

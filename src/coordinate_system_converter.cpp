@@ -1,14 +1,11 @@
+#include <iostream>
 #include <tas_proj/coordinate_system_converter.h>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 CoordinateSystemConverter::CoordinateSystemConverter(const std::string& first_proj_string,
                                                      const std::string& second_proj_string)
 {
-  proj_first_ = nullptr;
-  proj_second_ = nullptr;
   initialized_ = false;
   if (!first_proj_string.empty() && !second_proj_string.empty())
     init(first_proj_string, second_proj_string);
@@ -16,92 +13,50 @@ CoordinateSystemConverter::CoordinateSystemConverter(const std::string& first_pr
 
 CoordinateSystemConverter::~CoordinateSystemConverter()
 {
-  if (proj_first_)
-    pj_free(proj_first_);
-  if (proj_second_)
-    pj_free(proj_second_);
+  proj_destroy(P);
 }
 
 bool CoordinateSystemConverter::init(const std::string& first_proj_string, const std::string& second_proj_string)
 {
+  std::string filepath = "/usr/share/proj";
+  const char* c_filepath = filepath.c_str();
+  proj_context_set_search_paths(PJ_DEFAULT_CTX, 1, &c_filepath);
+
   proj_init_string_first_ = first_proj_string;
   proj_init_string_second_ = second_proj_string;
 
-  proj_first_ = pj_init_plus(first_proj_string.c_str());
-  proj_second_ = pj_init_plus(second_proj_string.c_str());
-
-  initialized_ = (proj_first_ && proj_second_);
+  P = proj_create_crs_to_crs(PJ_DEFAULT_CTX, first_proj_string.c_str(), second_proj_string.c_str(), nullptr);
+  initialized_ = P != nullptr;
   return initialized_;
 }
 
-bool CoordinateSystemConverter::toSecond(Eigen::Vector3d& to, const Eigen::Vector3d& from)
+bool CoordinateSystemConverter::toSecond(PJ_COORD& to, const PJ_COORD& from)
 {
   if (!initialized_)
   {
     return false;
   }
 
-  double x = from.x();
-  double y = from.y();
-  double z = from.z();
-  bool success = !pj_transform(proj_first_, proj_second_, 1, 1, &x, &y, &z);
-  to.x() = x;
-  to.y() = y;
-  to.z() = z;
-  return success;
+  to = proj_trans(P, PJ_FWD, from);
+
+  return true;
 }
 
-bool CoordinateSystemConverter::toSecond(Eigen::Vector2d& to, const Eigen::Vector2d& from)
+bool CoordinateSystemConverter::toFirst(PJ_COORD& to, const PJ_COORD& from)
 {
   if (!initialized_)
   {
     return false;
   }
 
-  double x = from.x();
-  double y = from.y();
-  bool success = !pj_transform(proj_first_, proj_second_, 1, 1, &x, &y, nullptr);
-  to.x() = x;
-  to.y() = y;
-  return success;
+  to = proj_trans(P, PJ_INV, from);
+
+  return true;
 }
 
-bool CoordinateSystemConverter::toFirst(Eigen::Vector3d& to, const Eigen::Vector3d& from)
-{
-  if (!initialized_)
-  {
-    return false;
-  }
-
-  double x = from.x();
-  double y = from.y();
-  double z = from.z();
-  bool success = !pj_transform(proj_second_, proj_first_, 1, 1, &x, &y, &z);
-  to.x() = x;
-  to.y() = y;
-  to.z() = z;
-  return success;
-}
-
-bool CoordinateSystemConverter::toFirst(Eigen::Vector2d& to, const Eigen::Vector2d& from)
-{
-  if (!initialized_)
-  {
-    return false;
-  }
-
-  double x = from.x();
-  double y = from.y();
-  bool success = !pj_transform(proj_second_, proj_first_, 1, 1, &x, &y, nullptr);
-  to.x() = x;
-  to.y() = y;
-  return success;
-}
-
-bool CoordinateSystemConverter::initialized()
+bool CoordinateSystemConverter::initialized() const
 {
   return initialized_;
 }
 
-}  // namespace proj
-}  // namespace tas
+}  // namespace tas::proj

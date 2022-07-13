@@ -1,16 +1,13 @@
-#include <ros/package.h>
-
 #include <tas_proj/geoid_converter.h>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 bool GeoidConverter::init()
 {
-  std::string filepath = ros::package::getPath("tas_proj") + "/media";
-  const char* c_filepath = filepath.c_str();
-  pj_set_searchpath(1, &c_filepath);
+  // in newer ubuntu versions egm96_15.gtx file already pre-installed in /usr/share/proj
+  // std::string filepath = ament_index_cpp::get_package_share_directory("tas_proj") + "/media";
+  // const char* c_filepath = filepath.c_str();
+  // proj_context_set_search_paths(PJ_DEFAULT_CTX, 1, &c_filepath);
   return CoordinateSystemConverter::init("+proj=longlat +datum=WGS84 +no_defs",
                                          "+proj=longlat +datum=WGS84 +geoidgrids=egm96_15.gtx +no_defs");
 }
@@ -22,9 +19,12 @@ double GeoidConverter::ellipsoidalHeight(double lon, double lat, double geoidal_
     init();
   }
 
-  Eigen::Vector3d out;
-  toFirst(out, { lon * DEG_TO_RAD, lat * DEG_TO_RAD, geoidal_height });
-  return out.z();
+  PJ_COORD out;
+  out.lpz.lam = lon;
+  out.lpz.phi = lat;
+  out.lpz.z = geoidal_height;
+  toFirst(out, out);
+  return out.lpz.z;
 }
 
 double GeoidConverter::geoidalHeight(double lon, double lat, double ellipsoidal_height)
@@ -34,10 +34,12 @@ double GeoidConverter::geoidalHeight(double lon, double lat, double ellipsoidal_
     init();
   }
 
-  Eigen::Vector3d out;
-  toSecond(out, { lon * DEG_TO_RAD, lat * DEG_TO_RAD, ellipsoidal_height });
-  return out.z();
+  PJ_COORD out;
+  out.lpz.lam = lon;
+  out.lpz.phi = lat;
+  out.lpz.z = ellipsoidal_height;
+  toSecond(out, out);
+  return out.lpz.z;
 }
 
-}  // namespace proj
-}  // namespace tas
+}  // namespace tas::proj

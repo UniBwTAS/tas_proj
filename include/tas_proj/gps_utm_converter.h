@@ -4,9 +4,7 @@
 #include <tas_proj/gps_coord.h>
 #include <tas_proj/utm_coord.h>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 class GpsUtmConverter : public CoordinateSystemConverter
 {
@@ -127,5 +125,4 @@ private:
   int utm_zone_;
   char utm_area_;
 };
-}  // namespace proj
 }  // namespace tas

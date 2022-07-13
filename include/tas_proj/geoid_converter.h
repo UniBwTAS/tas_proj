@@ -2,15 +2,11 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
 #include <tas_proj/gps_coord.h>
 
 #include <tas_proj/coordinate_system_converter.h>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 /**
  * @class GeoidConverter.
@@ -51,5 +47,4 @@ public:
    */
   double geoidalHeight(double lon, double lat, double ellipsoidal_height);
 };
-}  // namespace proj
 }  // namespace tas

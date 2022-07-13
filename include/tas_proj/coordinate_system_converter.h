@@ -1,14 +1,9 @@
 #pragma once
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H
-
-#include <proj_api.h>
+#include <proj.h>
 #include <string>
-#include <Eigen/Core>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 /**
  * @class CoordinateSystemConverter.
@@ -36,10 +31,7 @@ protected:
   std::string proj_init_string_second_;
 
   //! The first projection.
-  projPJ proj_first_;
-
-  //! The second projection.
-  projPJ proj_second_;
+  PJ *P{};
 
 public:
   /**
@@ -69,9 +61,7 @@ public:
    * @param from Source coordinates
    * @return True if successful, false otherwise
    */
-  bool toSecond(Eigen::Vector3d& to, const Eigen::Vector3d& from);
-
-  bool toSecond(Eigen::Vector2d& to, const Eigen::Vector2d& from);
+  bool toSecond(PJ_COORD& to, const PJ_COORD& from);
 
   /**
    * @brief Converts a given coordinate from "second" to "first" coordinate system
@@ -79,11 +69,8 @@ public:
    * @param from Source coordinates
    * @return True if successful, false otherwise
    */
-  bool toFirst(Eigen::Vector3d& to, const Eigen::Vector3d& from);
+  bool toFirst(PJ_COORD& to, const PJ_COORD& from);
 
-  bool toFirst(Eigen::Vector2d& to, const Eigen::Vector2d& from);
-
-  bool initialized();
+  bool initialized() const;
 };
-}  // namespace proj
 }  // namespace tas

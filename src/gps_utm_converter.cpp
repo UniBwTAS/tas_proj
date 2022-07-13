@@ -1,8 +1,8 @@
+#include <cmath>
+
 #include <tas_proj/gps_utm_converter.h>
 
-namespace tas
-{
-namespace proj
+namespace tas::proj
 {
 bool GpsUtmConverter::gpsToUtm(const GpsCoord& gps_point, UtmCoord& utm_point)
 {
@@ -29,13 +29,16 @@ bool GpsUtmConverter::gpsToUtm(double gps_lon, double gps_lat, double gps_headin
 
   if (initialized_)
   {
-    Eigen::Vector2d utm;
-    toSecond(utm, { gps_lon * DEG_TO_RAD, gps_lat * DEG_TO_RAD });
-    utm_east = utm.x();
-    utm_north = utm.y();
+    PJ_COORD gps, utm;
+    gps.lpz.lam = gps_lon;
+    gps.lpz.phi = gps_lat;
+    gps.lpz.z = gps_altitude;
+    toSecond(utm, gps);
+    utm_east = utm.enu.e;
+    utm_north = utm.enu.n;
+    utm_altitude = utm.enu.u;
     utm_zone = utm_zone_;
     utm_subarea = utm_area_;
-    utm_altitude = gps_altitude;
 
     if (gps_heading_valid)
     {
@@ -67,12 +70,15 @@ bool GpsUtmConverter::utmToGps(double& gps_lon, double& gps_lat, double& gps_hea
 
   if (initialized_)
   {
-    Eigen::Vector2d gps;
-    toFirst(gps, { utm_east, utm_north });
+    PJ_COORD gps, utm;
 
-    gps_lon = gps.x() * RAD_TO_DEG;
-    gps_lat = gps.y() * RAD_TO_DEG;
-    gps_altitude = utm_altitude;
+    utm.enu.e = utm_east;
+    utm.enu.n = utm_north;
+    utm.enu.u = utm_altitude;
+    toFirst(gps, utm);
+    gps_lon = gps.lpz.lam;
+    gps_lat = gps.lpz.phi;
+    gps_altitude = gps.lpz.z;
 
     if (utm_heading_valid)
     {
@@ -111,19 +117,25 @@ char GpsUtmConverter::getUtmArea()
 
 void GpsUtmConverter::calcHeadingOffset(double lon, double lat, double& heading_offset)
 {
-  Eigen::Vector2d utm;
+  PJ_COORD utm, gps;
   double utm_east1, utm_north1, utm_east2, utm_north2;
 
   // transform given point from GPS to UTM
-  toSecond(utm, { lon * DEG_TO_RAD, lat * DEG_TO_RAD });
-  utm_east1 = utm.x();
-  utm_north1 = utm.y();
+  gps.lpz.lam = lon;
+  gps.lpz.phi = lat;
+  gps.lpz.z = 0;
+  toSecond(utm, gps);
+  utm_east1 = utm.enu.e;
+  utm_north1 = utm.enu.n;
 
   // calculate a second point, moved a bit along the lon-axis.
   // transform this second point from GPS to UTM
-  toSecond(utm, { 0.0001 + lon * DEG_TO_RAD, lat * DEG_TO_RAD });
-  utm_east2 = utm.x();
-  utm_north2 = utm.y();
+  gps.lpz.lam = lon + 0.0001;
+  gps.lpz.phi = lat;
+  gps.lpz.z = 0;
+  toSecond(utm, gps);
+  utm_east2 = utm.enu.e;
+  utm_north2 = utm.enu.n;
 
   // calculate the angle between GPS and UTM coordinate system at this given coordinate
   heading_offset = atan((utm_north2 - utm_north1) / (utm_east2 - utm_east1));
@@ -239,5 +251,4 @@ double GpsUtmConverter::getHeadingOffset(double lon, double lat)
   return heading_offset;
 }
 
-}  // namespace proj
-}  // namespace tas
+}  // namespace tas::proj
